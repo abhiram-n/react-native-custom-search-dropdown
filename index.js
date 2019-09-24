@@ -69,15 +69,25 @@ export default class SearchableDropDown extends Component {
   };
 
   searchedItems = searchedText => {
-    let setSort = this.props.setSort;
-    if (!setSort && typeof setSort !== 'function') {
-        setSort = (item, searchedText) => { 
-          return item.name.toLowerCase().indexOf(searchedText.toLowerCase()) > -1
-        };
-    }
-    var ac = this.props.items.filter((item) => {
-      return setSort(item, searchedText);
-    });
+      var ac = this.props.items.filter(function(item) {
+        var tokens = searchedText.split(" ");
+        item.hits = 0;
+        for (i = 0; i < tokens.length; i++){
+          var token = tokens[i].toLowerCase();
+          if (token == 'bank' || token == 'banks' || token =='card' || token =='cards' || token == "")
+          {
+            continue;
+          }
+
+          if (item.name.toLowerCase().indexOf(token) > -1)
+          {
+            item.hits++;
+          }
+        }
+        
+        return item.hits > 0;
+      });
+      ac.sort(function(a,b) { if (a.hits > b.hits) {return -1; } return 1; });
     let item = {
       id: -1,
       name: searchedText
