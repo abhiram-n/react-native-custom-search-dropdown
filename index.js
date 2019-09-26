@@ -69,30 +69,28 @@ export default class SearchableDropDown extends Component {
   };
 
   searchedItems = searchedText => {
-      var ac = this.props.items.filter(function(item) {
-        var tokens = searchedText.split(" ");
-        item.hits = 0;
-        for (i = 0; i < tokens.length; i++){
-          var token = tokens[i].toLowerCase();
-          if (token == 'bank' || token == 'banks' || token =='card' || token =='cards' || token == "")
-          {
-            continue;
-          }
+    // filter the results based on the search term
+    let filterItems = this.props.filterItems;
+    if (!filterItems && typeof filterItems !== 'function') {
+      filterItems = (item, searchedText) => { 
+          return item.name.toLowerCase().indexOf(searchedText.toLowerCase()) > -1
+        };
+    }
+    
+    var results = this.props.items.filter((item) => {
+      return filterItems(item, searchedText);
+    });
 
-          if (item.name.toLowerCase().indexOf(token) > -1)
-          {
-            item.hits++;
-          }
-        }
-        
-        return item.hits > 0;
-      });
-      ac.sort(function(a,b) { if (a.hits > b.hits) {return -1; } return 1; });
+    // sort the search results
+    if (this.props.sortItems){
+      results.sort(this.props.sortItems);
+    }
+    
     let item = {
       id: -1,
       name: searchedText
     };
-    this.setState({ listItems: ac, item: item });
+    this.setState({ listItems: results, item: item });
     const onTextChange = this.props.onTextChange || this.props.textInputProps.onTextChange || this.props.onChangeText || this.props.textInputProps.onChangeText;
     if (onTextChange && typeof onTextChange === 'function') {
       setTimeout(() => {
